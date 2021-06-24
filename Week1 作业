@@ -1,0 +1,202 @@
+/**
+ * 66.加一(JAVA)
+ */
+// 时间复杂度 O(n), 空间复杂度 O(1)
+class Solution {
+    public int[] plusOne(int[] digits) {
+        for(int i = digits.length - 1; i >= 0; i--) {
+            digits[i]++;
+            digits[i] %= 10;
+            if(digits[i] != 0) return digits;
+        }
+        digits = new int[digits.length + 1];
+        digits[0] = 1;
+        return digits;
+    }
+}
+
+
+/**
+ * 21. 合并两个有序链表
+ */
+/** 循环调用 Iterative*/
+// 时间复杂度 O(m + n), 空间复杂度O(m + n)
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1 == null) return l2;
+        if(l2 == null) return l1;
+        
+        ListNode dummy = new ListNode(-1);
+        ListNode cur = dummy;
+        
+        while(l1 != null && l2 != null) {
+            if(l1.val <= l2.val) {
+                cur.next = l1;
+                l1 = l1.next;
+            } else {
+                cur.next = l2;
+                l2 = l2.next;
+            }
+            cur = cur.next;
+        }
+
+        cur.next = l1 == null ? l2 : l1;
+
+        return dummy.next;
+    }
+}
+
+/** 递归 recursion*/
+// 时间复杂度 O(m + n), 空间复杂度O(m + n)
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1 == null) {
+            return l2;
+        } else if(l2 == null) {
+            return l1;
+        } else if(l1.val < l2.val) {
+            l1.next = mergeTwoLists(l1.next, l2);
+            return l1;
+        } else {
+            l2.next = mergeTwoLists(l1, l2.next);
+            return l2;
+        }
+    }
+}
+
+
+/**
+ * 641. 设计循环双端队列
+ */
+class MyCircularDeque {
+    private int capacity;
+    private int front;
+    private int rear;
+    private int[] arr;
+
+    /** Initialize your data structure here. Set the size of the deque to be k. */
+    public MyCircularDeque(int k) {
+        capacity = k + 1;
+        arr = new int[capacity];
+        front = 0;
+        rear = 0;
+    }
+    
+    /** Adds an item at the front of Deque. Return true if the operation is successful. */
+    public boolean insertFront(int value) {
+        if(isFull()) return false;
+
+        front = (front - 1 + capacity) % capacity;
+        arr[front] = value;
+        return true;
+    }
+    
+    /** Adds an item at the rear of Deque. Return true if the operation is successful. */
+    public boolean insertLast(int value) {
+        if(isFull()) return false;
+        arr[rear] = value;
+        rear = (rear + 1) % capacity;
+        return true;
+    }
+    
+    /** Deletes an item from the front of Deque. Return true if the operation is successful. */
+    public boolean deleteFront() {
+        if(isEmpty()) return false;
+        front = (front + 1) % capacity;
+        return true;
+    }
+    
+    /** Deletes an item from the rear of Deque. Return true if the operation is successful. */
+    public boolean deleteLast() {
+        if(isEmpty()) return false;
+        rear = (rear - 1 + capacity) % capacity;
+        return true;
+    }
+    
+    /** Get the front item from the deque. */
+    public int getFront() {
+        if(isEmpty()) return -1;
+        return arr[front];
+    }
+    
+    /** Get the last item from the deque. */
+    public int getRear() {
+        if(isEmpty()) return -1;
+        return arr[(rear - 1 + capacity) % capacity];
+    }
+    
+    /** Checks whether the circular deque is empty or not. */
+    public boolean isEmpty() {
+        return front == rear;
+    }
+    
+    /** Checks whether the circular deque is full or not. */
+    public boolean isFull() {
+        return (rear + 1) % capacity == front;
+    }
+}
+
+
+
+/**
+ * 560. 和为K的子数组
+ */
+/** 暴力破解*/
+// 时间复杂度 O(n ^ 2), 空间复杂度O(1)
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        int count = 0;
+
+        for(int i = 0; i < nums.length; i++) {
+            int sum = 0;
+            for(int j = i; j >= 0; j--) {
+                sum += nums[j];
+                if(sum == k) count++;
+            }
+        }
+
+        return count;
+    }
+}
+
+/**前缀和*/
+// 时间复杂度 O(n ^ 2), 空间复杂度O(n)
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        int[] sum = new int[nums.length + 1];
+        sum[0] = nums[0];
+
+        for(int i = 0; i < nums.length; i++) {
+            sum[i + 1] = sum[i] + nums[i];
+        }
+
+        int count = 0;
+        for(int i = 0; i < nums.length; i++) {
+            for(int j = i; j < nums.length; j++) {
+                if(sum[j + 1] - sum[i] == k) count++;
+            }
+        }
+
+        return count;
+    }
+}
+
+/** 哈希表 */
+// 时间复杂度 O(n), 空间复杂度O(n)
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(0, 1);
+
+        int preSum = 0, res = 0;
+        for(int num : nums) {
+            preSum += num;
+            if(map.containsKey(preSum - k)) {
+                res += map.get(preSum - k);
+            }
+            map.put(preSum, map.getOrDefault(preSum, 0) + 1);
+        }
+
+        return res;
+    }
+}
