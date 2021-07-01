@@ -1,0 +1,176 @@
+146 LRU Cache
+/**
+ * Using doubly linked list and hash map to implement LRU cache
+ * Implement constructor and get, put interface
+ */
+class LRUCache {
+
+    // double linked list
+    class DlinkedList {
+        int key;
+        int value;
+        DlinkedList prev;
+        DlinkedList next;
+        
+        public DlinkedList() {
+        }
+
+        public DlinkedList(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    Map<Integer, DlinkedList> cache;  // support visit any node with key value in O(1)
+    DlinkedList head;
+    DlinkedList tail;
+    int capacity;
+    int size;   // current size
+
+    // constructor, initialize LRU
+    public LRUCache(int capacity) {
+        this.cache = new HashMap<>();
+        this.head = new DlinkedList();
+        this.tail = new DlinkedList();
+        this.capacity = capacity;
+        this.size = 0;
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+    
+    public int get(int key) {
+        DlinkedList targetNode = this.cache.get(key);
+        if(targetNode == null) {
+            return -1;
+        }
+        moveToHead(targetNode);
+        return targetNode.value;
+    }
+    
+    public void put(int key, int value) {
+        DlinkedList node = this.cache.get(key);
+        if(node == null) {
+            DlinkedList newNode = new DlinkedList(key, value);
+            cache.put(key, newNode);
+            addToHead(newNode);
+            this.size++;
+            if(this.size > this.capacity) {
+                DlinkedList tail = removeTail();
+                cache.remove(tail.key);
+                this.size--;
+            }
+        } else {
+            node.value = value;
+            moveToHead(node);
+        }
+    }
+
+    // move node to the first node.
+    private void moveToHead(DlinkedList node) {
+        removeNode(node);   // remove node links
+        addToHead(node);    // rebuild links
+    }
+
+    private void removeNode(DlinkedList node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    private void addToHead(DlinkedList node) {
+        node.prev = this.head;
+        node.next = this.head.next;
+        this.head.next.prev = node;
+        this.head.next = node;
+    }
+
+    private DlinkedList removeTail() {
+        DlinkedList tail = this.tail.prev;
+        removeNode(tail);
+        return tail;
+    }
+}
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache obj = new LRUCache(capacity);
+ * int param_1 = obj.get(key);
+ * obj.put(key,value);
+ */
+ 
+ 
+ 
+ 23. 合并K个升序链表
+ // Divide and conquer
+ /**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        if(lists == null || lists.length == 0) return null;
+        int start = 0, end = lists.length - 1;
+        return merge(lists, start, end);
+    }
+
+    private ListNode merge(ListNode[] lists, int start, int end) {
+        if(start == end) return lists[start];
+        int mid = start + (end - start) / 2;
+        ListNode left = merge(lists, start, mid);
+        ListNode right = merge(lists, mid + 1, end);
+        return mergeTwoNodes(left, right);
+    }
+
+    private ListNode mergeTwoNodes(ListNode node1, ListNode node2) {
+        ListNode dummy = new ListNode();
+        ListNode cur = dummy;
+        while(node1 != null && node2 != null) {
+            if(node1.val < node2.val) {
+                cur.next = node1;
+                node1 = node1.next;
+            } else {
+                cur.next = node2;
+                node2 = node2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = node1 == null ? node2 : node1;
+        return dummy.next;
+    }
+}
+
+
+1074. 元素和为目标值的子矩阵数量
+class Solution {
+    public int numSubmatrixSumTarget(int[][] matrix, int target) {
+        int n = matrix.length, m = matrix[0].length;
+        int[][] sum = new int[n + 1][m + 1];
+
+        for(int i = 1; i < n + 1; i++) {
+            for(int j = 1; j < m + 1; j++) {
+                sum[i][j] = sum[i - 1][j] + sum[i][j - 1] - sum[i - 1][j - 1] + matrix[i - 1][j - 1];
+            }
+        }
+
+        int ans = 0;
+        for(int row1 = 1; row1 < n + 1; row1++) {
+            for(int row2 = row1; row2 < n + 1; row2++) {
+                int cur = 0;
+                Map<Integer, Integer> map = new HashMap<>();
+                for(int k = 1; k < m + 1; k++) {
+                    cur = sum[row2][k] - sum[row1 - 1][k];
+                    if(cur == target) ans++;
+                    if(map.containsKey(cur - target)) ans += map.get(cur - target);
+                    map.put(cur, map.getOrDefault(cur, 0) + 1);
+                }
+            }
+        }
+
+        return ans;
+    }
+}
