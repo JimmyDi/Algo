@@ -1,0 +1,113 @@
+// 106. 从中序与后序遍历序列构造二叉树
+// Time Complexity: O(n), Space Complexity: O(n)
+class Solution {
+    private Map<Integer, Integer> memo = new HashMap<>();
+    private int[] post;
+
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+        
+        for(int i = 0; i < inorder.length; i++) {
+            memo.put(inorder[i], i);
+        }
+
+        this.post = postorder;
+
+        return buildTree(0, inorder.length - 1, 0, this.post.length - 1);
+    }
+
+    private TreeNode buildTree(int inorderStart, int inorderEnd, int postorderStart, int postorderEnd) {
+        if(inorderStart > inorderEnd || postorderStart > postorderEnd) return null;
+
+        int rootValue = this.post[postorderEnd];
+        int index = memo.get(rootValue);
+
+        TreeNode root = new TreeNode(rootValue);
+
+        root.left = buildTree(inorderStart, index - 1, postorderStart, index - inorderStart + postorderStart - 1);
+        root.right = buildTree(index + 1, inorderEnd, index - inorderStart + postorderStart, postorderEnd - 1);
+
+        return root;
+    }
+}
+
+// 130. 被围绕的区域
+// Time Complexity: O(m * n), Space Complexity: O(m * n)
+class Solution {
+    public void solve(char[][] board) {
+        int m = board.length, n = board[0].length;
+
+        for(int i = 0; i < m; i++) {
+            dfs(board, i, 0);
+            dfs(board, i, n - 1);
+        }
+
+        for(int i = 1; i < n - 1; i++) {
+            dfs(board, 0, i);
+            dfs(board, m - 1, i);
+        }
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                if(board[i][j] == 'A') {
+                    board[i][j] = 'O';
+                } else if(board[i][j] == 'O'){
+                    board[i][j] = 'X';
+                }
+            }
+        }
+    }
+
+    private void dfs(char[][] board, int row, int column) {
+        if(row < 0 || row >= board.length || column < 0 || column >= board[0].length || board[row][column] != 'O') {
+            return;
+        }
+
+        board[row][column] = 'A';
+
+        dfs(board, row + 1, column);
+        dfs(board, row - 1, column);
+        dfs(board, row, column + 1);
+        dfs(board, row, column - 1);
+    }
+}
+
+//210. 课程表 II
+//Time Complexity: O(n + m), Space Complexity: O(n + m)
+class Solution {
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
+        List<List<Integer>> edges = new ArrayList<>();
+        int[] inDegrees = new int[numCourses];
+        int[] res = new int[numCourses];
+        Queue<Integer> queue = new LinkedList<>();
+        int count = 0;
+
+        for(int i = 0; i < numCourses; i++) {
+            edges.add(new ArrayList<>());
+        }
+
+        for(int[] prerequisite : prerequisites) {
+            edges.get(prerequisite[1]).add(prerequisite[0]);
+            inDegrees[prerequisite[0]]++;
+        }
+
+        for(int i = 0; i <numCourses; i++) {
+            if(inDegrees[i] == 0) {
+                queue.offer(i);
+            }
+        }
+
+        while(!queue.isEmpty()) {
+            int curCourse = queue.poll();
+            res[count] = curCourse;
+            count++;
+            for(int course: edges.get(curCourse)) {
+                inDegrees[course]--;
+                if(inDegrees[course] == 0) {
+                    queue.offer(course);
+                }
+            }
+        }
+
+        return count == numCourses ? res : new int[0];
+    }
+}
