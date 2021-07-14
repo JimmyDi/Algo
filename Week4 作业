@@ -1,0 +1,171 @@
+// 355. Design Twitter
+class Tweet {
+    int tweetId;
+    int timeStamp;
+    Tweet next;
+    
+    public Tweet(int tweetId, int timeStamp) {
+        this.tweetId = tweetId;
+        this.timeStamp = timeStamp;
+        this.next = null;
+    }
+}
+
+class Twitter {
+    
+    Map<Integer, Tweet> tweetMap;
+    Map<Integer, Set<Integer>> followings;
+    int timeStamp;
+    PriorityQueue<Tweet> maxHeap;
+
+    /** Initialize your data structure here. */
+    public Twitter() {
+        this.tweetMap = new HashMap<>();
+        this.followings = new HashMap<>();
+        this.timeStamp = 0;
+        this.maxHeap = new PriorityQueue<>((tweet1, tweet2) -> tweet2.timeStamp - tweet1.timeStamp);
+    }
+    
+    /** Compose a new tweet.
+     * Time Complexity: O(1)
+     * Space Complexity: O(M) M is number of users
+     */
+    public void postTweet(int userId, int tweetId) {
+        this.timeStamp++;
+        if(this.tweetMap.containsKey(userId)) {
+            Tweet oldTweet = this.tweetMap.get(userId);
+            Tweet newTweet = new Tweet(tweetId, this.timeStamp);
+            newTweet.next = oldTweet;
+            this.tweetMap.put(userId, newTweet);
+        } else {
+            Tweet newTweet = new Tweet(tweetId, this.timeStamp);
+            this.tweetMap.put(userId, newTweet);
+        }
+    }
+    
+    /** Retrieve the 10 most recent tweet ids in the user's news feed. Each item in the news feed must be posted by users who the user followed or by the user herself. Tweets must be ordered from most recent to least recent.
+      * Time complexity: O(nlog(n))
+    */
+    public List<Integer> getNewsFeed(int userId) {
+        this.maxHeap.clear();
+        
+        if(this.tweetMap.containsKey(userId)) {
+            this.maxHeap.offer(this.tweetMap.get(userId));
+        }
+        
+        Set<Integer> followings = this.followings.get(userId);
+        if(followings != null && followings.size() > 0) {
+            for(int followees: followings) {
+                Tweet tweet = this.tweetMap.get(followees);
+                if(tweet != null) {
+                    this.maxHeap.offer(tweet);
+                }
+            }
+        }
+        
+        int count = 0;
+        List<Integer> ans = new ArrayList<>(10);
+        while(!maxHeap.isEmpty() && count < 10) {
+            Tweet tempTweet = this.maxHeap.poll();
+            ans.add(tempTweet.tweetId);
+            
+            if(tempTweet.next != null) {
+                this.maxHeap.offer(tempTweet.next);
+            }
+            
+            count++;
+        }
+        
+        return ans;
+    }
+    
+    /** Follower follows a followee. If the operation is invalid, it should be a no-op.
+     * Time complexity: O(1)
+     * Space complexity: O(M * N) M is number of followers
+    */
+    public void follow(int followerId, int followeeId) {
+        if(followerId == followeeId) return;
+        
+        if(this.followings.containsKey(followerId)) {
+            Set<Integer> followees = this.followings.get(followerId);
+            if(followees.contains(followeeId)) return;
+            followees.add(followeeId);
+        } else {
+            Set<Integer> followees = new HashSet<>();
+            followees.add(followeeId);
+            this.followings.put(followerId, followees);
+        }
+    }
+    
+    /** Follower unfollows a followee. If the operation is invalid, it should be a no-op. */
+    public void unfollow(int followerId, int followeeId) {
+        if(followerId == followeeId) return;
+        
+        Set<Integer> followees = this.followings.get(followerId);
+        if(followees != null) {
+            followees.remove(followeeId);
+        }
+    }
+}
+
+
+
+
+// 295. Find Median from Data Stream
+class MedianFinder {
+    PriorityQueue<Integer> minHeap;
+    PriorityQueue<Integer> maxHeap;
+
+    /** initialize your data structure here. */
+    public MedianFinder() {
+        this.minHeap = new PriorityQueue<>((x, y) -> x - y);
+        this.maxHeap = new PriorityQueue<>((x, y) -> y - x);
+    }
+    
+    // time complexity: O(logn)
+    // space complexity: O(n) = O(n/2) + O(n/2)
+    public void addNum(int num) {
+        if(minHeap.size() >= maxHeap.size()) {
+            minHeap.offer(num);
+            maxHeap.offer(minHeap.poll());
+        } else {
+            maxHeap.offer(num);
+            minHeap.offer(maxHeap.poll());
+        }
+    }
+    
+    // time complexity: O(logn)
+    // space complexity: O(n) = O(n/2) + O(n/2)
+    public double findMedian() {
+        if(minHeap.size() > maxHeap.size()){
+            return (double)minHeap.peek();
+        } else if(minHeap.size() < maxHeap.size()) {
+            return (double)maxHeap.peek();
+        } else {
+            return (double)((minHeap.peek() + maxHeap.peek()) / 2.0);
+        }
+    }
+}
+
+
+// 154. Find Minimum in Rotated Sorted Array II
+// Binary Search
+// time complexity: O(logn)
+class Solution {
+    public int findMin(int[] nums) {
+        int low = 0, high = nums.length - 1;
+        
+        while(low < high) {
+            int mid = low + (high - low) / 2;
+            if(nums[mid] < nums[high]) {
+                high = mid;
+            } else if(nums[mid] > nums[high]) {
+                low = mid + 1;
+            } else if(nums[mid] == nums[high]) {
+                high--;
+            }
+        }
+        
+        return nums[low];
+    }
+}
