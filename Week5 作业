@@ -1,0 +1,125 @@
+// 1011. 在 D 天内送达包裹的能力
+// Time Complexity: O(n * log(ΣW)) w is the sum of products
+// Space Complexity: O(1)
+class Solution {
+    public int shipWithinDays(int[] weights, int days) {
+        int sum = 0, max = 0;
+        for(int weight: weights) {
+            sum += weight;
+            max = Math.max(max, weight);
+        }
+        int left = max, right = sum;
+
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(canShip(weights, days, mid)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
+    }
+
+    private boolean canShip(int[] weights, int days, int capacity) {
+        int cur = capacity;
+
+        for(int weight: weights) {
+            if(weight > capacity) return false;
+            if(cur < weight) {
+                cur = capacity;
+                days--;
+            }
+            cur -= weight;
+        }
+
+        return days > 0;
+    }
+}
+
+// 911. Online Election
+// Time Complexity: O(N + Q * LogN)
+// Space Complexity: O(n)
+class TopVotedCandidate {
+    List<Vote> leaders;
+    
+    public TopVotedCandidate(int[] persons, int[] times) {
+        this.leaders = new ArrayList<>();
+        Map<Integer, Integer> personCount = new HashMap<>();
+        int leader = -1;
+        int maxVotes = 0;
+        
+        for(int i = 0; i < persons.length; i++) {
+            int person = persons[i];
+            int time = times[i];
+            int curPerCount = personCount.getOrDefault(person, 0) + 1;
+            personCount.put(person, curPerCount);
+            if(curPerCount >= maxVotes) {
+                if(person != leader) {
+                    leader = person;
+                    this.leaders.add(new Vote(person, time));
+                }
+                maxVotes = curPerCount;
+            }
+            
+        }
+    }
+    
+    public int q(int t) {
+        int low = 0, high = this.leaders.size();
+        
+        while(low < high) {
+            int mid = low + (high - low) / 2;
+            if(this.leaders.get(mid).time <= t) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+        
+        return this.leaders.get(low - 1).person;
+    }
+}
+
+class Vote {
+    int person, time;
+    
+    public Vote(int person, int time) {
+        this.person = person;
+        this.time = time;
+    }
+}
+
+// 875. 爱吃香蕉的珂珂
+// Time Complexity: O(NlogW)
+// Space Complexity: O(1)
+class Solution {
+    public int minEatingSpeed(int[] piles, int h) {
+        int max = 1;
+        for(int pile: piles) {
+            max = Math.max(pile, max);
+        }
+
+        int left = 1, right = max;
+
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(canEatAll(piles, h, mid)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+
+        return left;
+    }
+
+    private boolean canEatAll(int[] piles, int h, int speed) {
+        int time = 0;
+        for(int pile: piles) {
+            time += (pile + speed - 1) / speed;
+        }
+
+        return time <= h;
+    }
+}
