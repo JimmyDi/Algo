@@ -1,0 +1,173 @@
+// 516 DP 
+// DP[i][j] means longest palindrome string from position i to j
+// Time Complexity O(n ^ 2)
+// Space Complexity O(n ^ 2)
+class Solution {
+    public int longestPalindromeSubseq(String s) {
+        int len = s.length();
+        int[][] dp = new int[len][len];
+
+        for(int i = 0; i < len; i++) {
+            dp[i][i] = 1;
+        }
+
+        for(int i = len - 1; i >= 0; i--) {
+            for(int j = i + 1; j < len; j++) {
+                if(s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = 2 + dp[i + 1][j - 1];
+                } else {
+                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        return dp[0][len - 1];
+    }
+}
+
+// 124 Tree structure like DP with DFS
+// Time Complexity: O(n)
+// Space Complexity: O(logn) dfs system stack
+class Solution {
+    int maxResult = Integer.MIN_VALUE;
+
+    public int maxPathSum(TreeNode root) {
+        dfs(root);
+        return maxResult;
+    }
+
+    private int dfs(TreeNode node) {
+        if(node == null) {
+            return 0;
+        }
+
+        int leftNodeSum = dfs(node.left);
+        int rightNodeSum = dfs(node.right);
+
+        int innerNodeMax = node.val + leftNodeSum + rightNodeSum;
+        maxResult = Math.max(maxResult, innerNodeMax);
+
+        int outerNodeMax = node.val + Math.max(leftNodeSum, rightNodeSum);
+
+        return outerNodeMax < 0 ? 0 : outerNodeMax;
+    }
+}
+
+// 684 Disjoint Set
+// Time Complexity: 
+// Space Complexity: O(n * logn)
+// Space Complexity: O(n)
+class Solution {
+    public int[] findRedundantConnection(int[][] edges) {
+        DisjointSet disjointSet = new DisjointSet(edges.length + 1);
+
+        for(int[] edge: edges) {
+            int source = edge[0];
+            int target = edge[1];
+            if(disjointSet.find(source) != disjointSet.find(target)) {
+                disjointSet.union(source, target);
+            } else {
+                return edge;
+            }
+        }
+
+        return new int[2];
+    }
+}
+
+class DisjointSet {
+    int[] set;
+
+    public DisjointSet(int size) {
+        this.set = new int[size];
+
+        for(int i = 0; i < size; i++) {
+            this.set[i] = i;
+        }
+    }
+
+    public int find(int x) {
+        if(x == this.set[x]) return x;
+
+        this.set[x] = find(this.set[x]);
+        return set[x];
+    }
+
+    public void union(int nodeA, int nodeB) {
+        int rootA = this.find(nodeA);
+        int rootB = this.find(nodeB);
+
+        if(rootA != rootB) {
+            this.set[rootA] = rootB;
+        }
+    }
+}
+
+
+// 200 Disjoint Set
+// Time Complexity: O(m * n * α(m * n))
+// Space Complexity: O(m * n)
+class Solution {
+    private final int[][] dirs = {{1, 0}, {0, 1}};
+
+    public int numIslands(char[][] grid) {
+        int rows = grid.length, columns = grid[0].length;
+        UnionFind unionFind = new UnionFind(rows * columns);
+        int countSpaces = 0;
+
+        for(int i = 0; i < rows; i++) {
+            for(int j = 0; j < columns; j++) {
+                if(grid[i][j] == '0') {
+                    countSpaces++;
+                } else {
+                    for(int[] dir: dirs) {
+                        int newRow = i + dir[0];
+                        int newCol = j + dir[1];
+                        if(newRow < rows && newCol < columns && grid[newRow][newCol] == '1') {
+                            unionFind.union(getIndex(i, j, columns), getIndex(newRow, newCol, columns));
+                        }
+                    }
+                }
+            }
+        }
+
+        return unionFind.count - countSpaces;
+    }
+
+    private int getIndex(int row, int column, int columns) {
+        return row * columns + column;
+    }
+}
+
+class UnionFind{
+    int[] set;
+    int count;
+
+    public UnionFind(int size) {
+        this.set = new int[size];
+        this.count = size;
+
+        for(int i = 0; i < size; i++) {
+            this.set[i] = i;
+        }
+    }
+
+    public int find(int x) {
+        if(this.set[x] == x) {
+            return x;
+        }
+
+        this.set[x] = this.find(set[x]);
+        return set[x];
+    }
+
+    public void union(int nodeA, int nodeB) {
+        int rootA = this.find(nodeA);
+        int rootB = this.find(nodeB);
+
+        if(rootA != rootB) {
+            this.set[rootA] = rootB;
+            this.count--;
+        }
+    }
+}
