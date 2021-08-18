@@ -1,0 +1,81 @@
+// 1091 BFS
+class Solution {
+    private int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {-1, 1}, {1, 1}, {-1, -1}, {1, -1}};
+
+    public int shortestPathBinaryMatrix(int[][] grid) {
+        if(grid == null || grid.length == 0) {
+            return 0;
+        }
+
+        int rows = grid.length;
+        int cols = grid[0].length;
+
+        if(grid[0][0] == 1 || grid[rows - 1][cols - 1] == 1) {
+            return -1;
+        }
+
+        boolean[][] visited = new boolean[rows][cols];
+        Queue<int[]> queue = new LinkedList<>();
+
+        visited[0][0] = true;
+        queue.offer(new int[]{0,0});
+
+        int step = 0;
+
+        while(!queue.isEmpty()) {
+            int qSize = queue.size();
+            for(int i = 0; i < qSize; i++) {
+                int[] curPos = queue.poll();
+                
+                if(curPos[0] == rows - 1 && curPos[1] == cols - 1) {
+                    return step + 1;
+                }
+
+                for(int[] dir: dirs) {
+                    int newX = curPos[0] + dir[0];
+                    int newY = curPos[1] + dir[1];
+                    if(newX >= 0 && newX < rows && newY >= 0 && newY < cols && !visited[newX][newY] && grid[newX][newY] == 0) {
+                        queue.offer(new int[]{newX, newY});
+                        visited[newX][newY] = true;
+                    }
+                }
+            }
+
+            step++;
+        }
+
+        return -1;
+    }
+}
+
+
+// 239
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int n = nums.length;
+        Deque<Integer> deque = new LinkedList<>();
+
+        for(int i = 0; i < k; i++) {
+            while(!deque.isEmpty() && nums[i] >= nums[deque.peekLast()]){
+                deque.pollLast();
+            }
+            deque.offerLast(i);
+        }
+
+        int[] ans = new int[n - k + 1];
+        ans[0] = nums[deque.peekFirst()];
+
+        for(int i = k; i < n; i++) {
+            while(!deque.isEmpty() && nums[i] >= nums[deque.peekLast()]){
+                deque.pollLast();
+            }
+            deque.offerLast(i);
+            while(deque.peekFirst() <= i - k) {
+                deque.pollFirst();
+            }
+            ans[i - k + 1] = nums[deque.peekFirst()];
+        }
+
+        return ans;
+    }
+}
