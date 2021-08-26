@@ -1,0 +1,49 @@
+// 218
+class Solution {
+    public List<List<Integer>> getSkyline(int[][] buildings) {
+        List<List<Integer>> ans = new ArrayList<>();
+
+        List<int[]> ps = new ArrayList<>();
+        for(int[] building: buildings) {
+            int left = building[0], right = building[1], height = building[2];
+            ps.add(new int[]{left, - height});
+            ps.add(new int[]{right, height});
+        }
+
+        Collections.sort(ps, (borderA, borderB) -> {
+           if(borderA[0] != borderB[0]) {
+               return borderA[0] - borderB[0];
+           } else {
+               return borderA[1] - borderB[1];
+           }
+        });
+
+        PriorityQueue<Integer> pq = new PriorityQueue<>((heightA, heightB) -> heightB - heightA);
+        int prev = 0;
+        pq.offer(prev);
+
+        for(int[] psElem: ps) {
+            int border = psElem[0];
+            int height = psElem[1];
+
+            
+            if(height < 0) {
+                pq.offer(-height);
+            } else {
+                pq.remove(height);
+            }
+
+            int curHeight = pq.peek();
+
+            if(curHeight != prev) {
+                List<Integer> tempAns = new ArrayList<>();
+                tempAns.add(border);
+                tempAns.add(curHeight);
+                ans.add(tempAns);
+                prev = curHeight;
+            }
+        }
+
+        return ans;
+    }
+}
